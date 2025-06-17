@@ -873,7 +873,8 @@
           }
 
           const data = await response.json();
-          displayVirusTotalResults(data);
+          // Pass selectedHash to display function
+          displayVirusTotalResults(data, selectedHash);
         } catch (error) {
           console.error("Error analyzing with VirusTotal:", error);
           vtResultsDiv.innerHTML = `<p class="status-message vt-result-malicious">Error: ${error.message}. Please check API key, network, or hash validity.</p>`;
@@ -882,7 +883,8 @@
         }
       }
 
-      function displayVirusTotalResults(data) {
+      // Modified to accept queriedHash
+      function displayVirusTotalResults(data, queriedHash) {
         const vtResultsDiv = document.getElementById("virustotal-results");
         let htmlContent = "";
 
@@ -892,8 +894,7 @@
           const totalVotes = attrs.total_votes;
           const reputation = attrs.reputation;
           const tags = attrs.tags;
-          const sha256 = attrs.sha256; // Use SHA256 for the link
-          const detectUrl = `https://www.virustotal.com/gui/file/${sha256}/detection`;
+          const sha256_from_vt = attrs.sha256; // Get SHA256 directly from VT attrs for the link
 
           // Check if there are actual detection stats
           const totalDetections = lastAnalysisStats?.malicious || 0;
@@ -901,10 +902,9 @@
             attrs.last_analysis_results || {}
           ).length;
 
+          // Use queriedHash directly in the title
           htmlContent += `
-            <h4>Analysis Result for <code>${
-              attrs.md5 || attrs.sha1 || sha256
-            }</code>:</h4>
+            <h4>Analysis Result for <code>${queriedHash}</code>:</h4>
             <p><b>Analysis Date:</b> ${new Date(
               attrs.last_analysis_date * 1000
             ).toLocaleString()}</p>
@@ -943,7 +943,7 @@
                 ? `<p><b>Tags:</b> ${tags.join(", ")}</p>`
                 : ""
             }
-            <p><a href="${detectUrl}" target="_blank" rel="noopener noreferrer">View Full Report on VirusTotal <i class="fas fa-external-link-alt"></i></a></p>
+            <p><a href="https://www.virustotal.com/gui/file/${sha256_from_vt}/detection" target="_blank" rel="noopener noreferrer">View Full Report on VirusTotal <i class="fas fa-external-link-alt"></i></a></p>
           `;
 
           if (totalDetections > 0) {
