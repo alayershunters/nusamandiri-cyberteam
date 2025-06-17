@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cyber Security Incident Analysis Platform</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Space+Mono&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary-blue: #007bff;
+        --primary-green: #28a745;
+        --dark-bg: #2c3e50;
+        --light-bg: #f8f9fa;
+        --card-bg: #ffffff;
+        --text-color: #34495e;
+        --header-color: #1a2c3d;
+        --border-color: #e0e6ed;
+        --shadow-light: rgba(0, 0, 0, 0.08);
+        --shadow-medium: rgba(0, 0, 0, 0.12);
+        --warning-orange: #ffc107;
+        --danger-red: #dc3545;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: var(--light-bg);
+        color: var(--text-color);
+        line-height: 1.6;
+      }
+
+      header {
+        background-color: var(--dark-bg);
+        color: white;
+        padding: 30px 20px;
+        text-align: center;
+        box-shadow: 0 4px 8px var(--shadow-medium);
+      }
+
+      header h1 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 2.5em;
+        letter-spacing: 1px;
+      }
+
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 30px 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .upload-section {
+        display: flex;
+        flex-wrap: wrap; /* Allow wrapping on smaller screens */
+        gap: 15px;
+        margin-bottom: 30px;
+        justify-content: center;
+      }
+
+      input[type="file"] {
+        display: none;
+      }
+
+      label {
+        display: flex;
+        align-items: center;
+        padding: 12px 25px;
+        background-color: var(--primary-blue);
+        color: white;
+        cursor: pointer;
+        border-radius: 8px;
+        font-size: 1em;
+        font-weight: 600;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        box-shadow: 0 2px 4px var(--shadow-light);
+        flex-grow: 1; /* Allow labels to grow */
+        min-width: 200px; /* Minimum width for labels */
+        justify-content: center;
+      }
+
+      label:hover {
+        background-color: #0056b3;
+        transform: translateY(-2px);
+      }
+
+      label i {
+        margin-right: 8px;
+      }
+
+      .btn-analyze {
+        background-color: var(--primary-green);
+        color: white;
+        padding: 15px 40px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1em;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        box-shadow: 0 4px 8px var(--shadow-medium);
+        margin-bottom: 30px;
+      }
+
+      .btn-analyze:hover {
+        background-color: #218838;
+        transform: translateY(-3px);
+      }
+
+      .results-grid {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(
+          auto-fit,
+          minmax(300px, 1fr)
+        ); /* Flexible columns */
+        gap: 25px;
+        margin-bottom: 30px;
+      }
+
+      .result-card {
+        background-color: var(--card-bg);
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px var(--shadow-light);
+        font-size: 0.95em;
+        word-wrap: break-word;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; /* To handle pre-wrap overflow */
+      }
+
+      .result-card h3 {
+        color: var(--header-color);
+        font-size: 1.5em;
+        margin-top: 0;
+        margin-bottom: 15px;
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 10px;
+        display: flex;
+        align-items: center;
+      }
+
+      .result-card h3 i {
+        margin-right: 10px;
+        color: var(--primary-blue);
+      }
+
+      .result-card h4 {
+        color: var(--header-color);
+        font-size: 1.1em;
+        margin-top: 20px;
+        margin-bottom: 10px;
+      }
+
+      .result-card p {
+        margin-bottom: 8px;
+      }
+
+      .result-card pre {
+        background-color: #ecf0f1;
+        padding: 15px;
+        border-radius: 6px;
+        overflow-x: auto; /* Enable horizontal scrolling for long lines */
+        font-family: "Space Mono", monospace;
+        font-size: 0.9em;
+        line-height: 1.4;
+        max-height: 300px; /* Limit height for logs */
+        white-space: pre-wrap; /* Wrap text in pre */
+        word-wrap: break-word; /* Break long words */
+      }
+
+      .result-card ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .result-card li {
+        background-color: #f0f4f7;
+        border-left: 4px solid var(--primary-blue);
+        padding: 10px 15px;
+        margin-bottom: 8px;
+        border-radius: 4px;
+      }
+
+      .result-card li:last-child {
+        margin-bottom: 0;
+      }
+
+      .status-message {
+        color: #6c757d;
+        font-style: italic;
+      }
+
+      .show-more-btn {
+        background: none;
+        border: none;
+        color: var(--primary-blue);
+        cursor: pointer;
+        font-size: 0.9em;
+        text-decoration: underline;
+        margin-top: 5px;
+        display: block; /* Ensures it takes its own line */
+      }
+
+      .show-more-btn:hover {
+        color: #0056b3;
+      }
+
+      /* VirusTotal Specific Styles */
+      /* Make the VT card span full width below the grid */
+      #virustotal-analysis.result-card {
+        width: 100%;
+        max-width: 100%; /* Ensure it takes full width of container */
+        grid-column: 1 / -1; /* Span all columns in a grid context if placed inside grid, but we place it outside */
+        margin-top: 20px; /* Space from the grid above */
+      }
+
+      .virustotal-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .virustotal-controls select {
+        padding: 10px 15px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 1em;
+        flex-grow: 1;
+        min-width: 200px;
+        background-color: white;
+      }
+
+      .virustotal-controls button {
+        background-color: var(--primary-blue);
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        box-shadow: 0 2px 4px var(--shadow-light);
+      }
+
+      .virustotal-controls button:hover {
+        background-color: #0056b3;
+        transform: translateY(-2px);
+      }
+
+      .virustotal-controls button:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .vt-result-detail {
+        margin-top: 15px;
+        border-top: 1px solid var(--border-color);
+        padding-top: 15px;
+      }
+
+      .vt-result-detail p {
+        margin: 5px 0;
+      }
+
+      .vt-result-positive {
+        color: var(--danger-red);
+        font-weight: 700;
+      }
+
+      .vt-result-negative {
+        color: var(--primary-green);
+        font-weight: 700;
+      }
+
+      .vt-result-malicious {
+        color: var(--danger-red);
+        font-weight: 700;
+      }
+
+      .vt-result-harmless {
+        color: var(--primary-green);
+        font-weight: 700;
+      }
+
+      .vt-result-undetected {
+        color: var(--warning-orange);
+        font-weight: 700;
+      }
+
+      /* Responsive Adjustments */
+      @media (max-width: 768px) {
+        .upload-section {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        label {
+          min-width: unset; /* Remove min-width on small screens */
+        }
+
+        .btn-analyze {
+          width: 100%;
+          padding: 15px 20px;
+        }
+
+        header h1 {
+          font-size: 2em;
+        }
+
+        .result-card h3 {
+          font-size: 1.3em;
+        }
+
+        .virustotal-controls {
+          flex-direction: column;
+          align-items: stretch;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Cyber Security Incident Analysis Platform</h1>
+    </header>
+
+    <div class="container">
+      <div class="upload-section">
+        <label for="file-attack2-json"
+          ><i class="fas fa-file-code"></i> Upload Attack2 JSON File</label
+        >
+        <input type="file" id="file-attack2-json" accept=".json" />
+
+        <label for="file-sample3"
+          ><i class="fas fa-memory"></i> Upload Sample3 Text File</label
+        >
+        <input type="file" id="file-sample3" accept=".txt" />
+      </div>
+
+      <button class="btn-analyze" onclick="analyzeFiles()">
+        <i class="fas fa-play-circle"></i> Analyze Files
+      </button>
+
+      <div class="results-grid" id="results-grid">
+        <div id="json-content" class="result-card">
+          <h3><i class="fas fa-file-alt"></i> Attack2 JSON Analysis</h3>
+          <p class="status-message">No file uploaded.</p>
+        </div>
+        <div id="sample3-content" class="result-card">
+          <h3><i class="fas fa-laptop-code"></i> Sample3 Host Analysis</h3>
+          <p class="status-message">No file uploaded.</p>
+        </div>
+        <div id="correlation-content" class="result-card">
+          <h3><i class="fas fa-project-diagram"></i> Correlation & Summary</h3>
+          <p class="status-message">
+            Upload all files and click "Analyze Files" to see correlations.
+          </p>
+        </div>
+      </div>
+
+      <div id="virustotal-analysis" class="result-card">
+        <h3><i class="fas fa-virus"></i> VirusTotal File Analysis</h3>
+        <p class="status-message">
+          Upload and analyze JSON file to enable VirusTotal lookup.
+        </p>
+        <div class="virustotal-controls">
+          <select id="hash-selector" onchange="enableVtButton()">
+            <option value="">-- Select a Hash to Analyze --</option>
+          </select>
+          <button
+            id="vt-analyze-btn"
+            onclick="analyzeHashWithVirusTotal()"
+            disabled
+          >
+            <i class="fas fa-search"></i> Analyze Hash
+          </button>
+        </div>
+        <div id="virustotal-results" class="vt-result-detail"></div>
+      </div>
+    </div>
+
+    <script>
+      // Global variables to store parsed data for correlation and VT lookup
+      let parsedJsonData = { malware: [], iocs: [], hashes: [] }; // Added 'hashes' array
+      let parsedSample3 = { processes: [], platform: "", rawContent: "" };
+
+      // Your VirusTotal API Key
+      const VIRUSTOTAL_API_KEY =
+        "13a99134efd576eefe4b493a963bfd2d4ee0297fcc1483c587d15c89ae471711";
+      const VIRUSTOTAL_API_URL = "https://www.virustotal.com/api/v3/files/"; // Endpoint for file hashes
+
+      // Helper function to update card content
+      function updateCard(id, title, content, iconClass = "") {
+        const card = document.getElementById(id);
+        card.innerHTML = `<h3><i class="${iconClass}"></i> ${title}</h3>${content}`;
+      }
+
+      // Function to display processes with a "Show All" button
+      function displaySample3Processes(processes, platform, showAll = false) {
+        const displayLimit = 10;
+        const processesToDisplay = showAll
+          ? processes
+          : processes.slice(0, displayLimit);
+        const remainingProcessesCount = processes.length - displayLimit;
+
+        let processListHtml = `<pre>${processesToDisplay.join("\n")}</pre>`;
+
+        if (!showAll && remainingProcessesCount > 0) {
+          processListHtml += `
+            <button class="show-more-btn" onclick="showAllSample3Processes()">
+              Show all ${processes.length} entries <i class="fas fa-caret-down"></i>
+            </button>
+          `;
+        } else if (showAll && processes.length > displayLimit) {
+          processListHtml += `
+            <button class="show-more-btn" onclick="showLimitedSample3Processes()">
+              Show top ${displayLimit} entries <i class="fas fa-caret-up"></i>
+            </button>
+          `;
+        }
+
+        return `
+          <p><strong>Platform:</strong> ${platform}</p>
+          <h4>Detected Processes (${processes.length} total):</h4>
+          <div id="sample3-process-list">${processListHtml}</div>
+          <h4>Full Raw Content:</h4>
+          <pre>${parsedSample3.rawContent || "Loading raw content..."}</pre>
+        `;
+      }
+
+      // Functions to toggle process view
+      function showAllSample3Processes() {
+        updateCard(
+          "sample3-content",
+          "Sample3 Host Analysis",
+          displaySample3Processes(
+            parsedSample3.processes,
+            parsedSample3.platform,
+            true
+          ),
+          "fas fa-laptop-code"
+        );
+      }
+
+      function showLimitedSample3Processes() {
+        updateCard(
+          "sample3-content",
+          "Sample3 Host Analysis",
+          displaySample3Processes(
+            parsedSample3.processes,
+            parsedSample3.platform,
+            false
+          ),
+          "fas fa-laptop-code"
+        );
+      }
+
+      // --- File Parsing Functions ---
+
+      function parseJsonFile(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            try {
+              const jsonData = JSON.parse(event.target.result);
+              let malwareListHtml = "<ul>";
+              let iocListHtml = "<ul>";
+              let currentMalware = [];
+              let currentIOCs = [];
+              let detectedHashes = []; // Array to store extracted hashes
+
+              // Check if it's a STIX bundle with an 'objects' array
+              if (
+                jsonData.type === "bundle" &&
+                Array.isArray(jsonData.objects)
+              ) {
+                jsonData.objects.forEach((obj) => {
+                  if (obj.type === "malware") {
+                    const malwareName = obj.name || "Unknown Malware";
+                    malwareListHtml += `<li><b>${malwareName}</b></li>`;
+                    currentMalware.push(malwareName);
+                  } else if (obj.type === "tool") {
+                    // Also list tools as potential threats
+                    const toolName = obj.name || "Unknown Tool";
+                    malwareListHtml += `<li><b>Tool: ${toolName}</b></li>`;
+                    currentMalware.push(toolName);
+                  } else if (obj.type === "indicator") {
+                    let iocValue = "N/A";
+                    let extractedHashDisplay = ""; // For displaying hash within IOC card
+
+                    if (obj.pattern_type === "stix" && obj.pattern) {
+                      // Regex for various IOC types
+                      const patternMatch = obj.pattern.match(
+                        /\[(file|domain-name|ipv4-addr|url):value\s*=\s*['"]([^'"]+)['"]/i
+                      );
+
+                      // Specific regex for hashes within pattern
+                      const hashRegex =
+                        /hashes\.'(MD5|SHA-1|SHA-256)'\s*=\s*['"]([a-fA-F0-9]+)['"]/g;
+                      let match;
+                      let tempHashes = []; // To store hashes for this specific IOC
+
+                      while ((match = hashRegex.exec(obj.pattern)) !== null) {
+                        const hashType = match[1];
+                        const hashValue = match[2];
+                        detectedHashes.push({
+                          type: hashType,
+                          value: hashValue,
+                        });
+                        tempHashes.push(
+                          `<code>${hashValue}</code> (${hashType})`
+                        );
+                      }
+
+                      if (patternMatch && patternMatch[1] && patternMatch[2]) {
+                        iocValue = `${patternMatch[1].replace("-", " ")}: ${
+                          patternMatch[2]
+                        }`;
+                        currentIOCs.push({
+                          type: patternMatch[1],
+                          value: patternMatch[2],
+                        });
+                      } else {
+                        // Fallback to raw pattern if no specific type match
+                        iocValue = obj.pattern;
+                        currentIOCs.push({
+                          type: "pattern",
+                          value: obj.pattern,
+                        });
+                      }
+
+                      if (tempHashes.length > 0) {
+                        extractedHashDisplay = `<br><b>Detected Hash(es):</b> ${tempHashes.join(
+                          ", "
+                        )}`;
+                      }
+                    } else {
+                      iocValue = obj.description || "No specific value";
+                      currentIOCs.push({
+                        type: "description",
+                        value: obj.description,
+                      });
+                    }
+
+                    // Display IOC and any extracted hash
+                    iocListHtml += `<li><b>Indicator (${
+                      obj.id
+                    }):</b> ${iocValue} ${extractedHashDisplay} (${
+                      obj.description || "No description"
+                    })</li>`;
+                  }
+                });
+              } else {
+                // Fallback if not a STIX bundle, just show raw JSON
+                malwareListHtml += `<li><p class="status-message">JSON structure not recognized as STIX bundle. Displaying raw content.</p></li>`;
+                iocListHtml += `<li><pre>${JSON.stringify(
+                  jsonData,
+                  null,
+                  2
+                )}</pre></li>`;
+              }
+
+              malwareListHtml += "</ul>";
+              iocListHtml += "</ul>";
+
+              updateCard(
+                "json-content",
+                "Attack2 JSON Analysis",
+                `
+                  <h4>Malware & Tools Detected:</h4>
+                  ${malwareListHtml}
+                  <h4>Indicators of Compromise (IOCs):</h4>
+                  ${iocListHtml}
+                `,
+                "fas fa-file-alt"
+              );
+              parsedJsonData.malware = currentMalware;
+              parsedJsonData.iocs = currentIOCs;
+              // Ensure uniqueness if a hash appears multiple times from different IOCs
+              const uniqueHashes = Array.from(
+                new Map(detectedHashes.map((h) => [h.value, h])).values()
+              );
+              parsedJsonData.hashes = uniqueHashes;
+
+              populateHashSelector(parsedJsonData.hashes); // Populate the VirusTotal hash selector
+              resolve();
+            } catch (error) {
+              console.error("Error parsing JSON file:", error);
+              updateCard(
+                "json-content",
+                "Attack2 JSON Analysis",
+                `<p class="status-message"><b>Error parsing JSON file.</b></p><p>${error.message}</p>`,
+                "fas fa-exclamation-triangle"
+              );
+              reject(error);
+            }
+          };
+          reader.readAsText(file);
+        });
+      }
+
+      function parseSample3File(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            const content = event.target.result;
+            let processes = [];
+            let platform = "N/A";
+
+            const lines = content.split("\n");
+            lines.forEach((line) => {
+              if (line.startsWith("PLATFORM=")) {
+                platform = line.split("=")[1].trim();
+              } else if (line.startsWith("PROCESS=")) {
+                const processInfo = line.split("=")[1].trim();
+                if (processInfo) {
+                  processes.push(processInfo);
+                }
+              }
+            });
+
+            parsedSample3.processes = processes;
+            parsedSample3.platform = platform;
+            parsedSample3.rawContent = content; // Store raw content
+
+            // Initially display limited processes
+            updateCard(
+              "sample3-content",
+              "Sample3 Host Analysis",
+              displaySample3Processes(processes, platform, false),
+              "fas fa-laptop-code"
+            );
+
+            resolve();
+          };
+          reader.readAsText(file);
+        });
+      }
+
+      // --- Correlation Function ---
+
+      function performCorrelation() {
+        let correlationResultsHtml = "<ul>";
+        let foundCorrelations = false;
+
+        // 1. Correlate Sample3 processes with JSON IOCs (e.g., malicious process names)
+        parsedSample3.processes.forEach((proc) => {
+          const procName = proc.split(",")[0].toLowerCase().trim(); // Get process name without PID
+          parsedJsonData.iocs.forEach((ioc) => {
+            if (ioc.type && ioc.value) {
+              const iocTypeLower = ioc.type.toLowerCase().trim();
+              const iocValueLower = ioc.value.toLowerCase().trim();
+              // Check for common IOC types that might match process names
+              if (
+                iocTypeLower.includes("filename") ||
+                iocTypeLower.includes("processname") ||
+                iocTypeLower.includes("name") ||
+                iocTypeLower.includes("description") // Include description as it might contain names
+              ) {
+                // Extract potential file/process name from STIX pattern or description
+                const filenameMatch = iocValueLower.match(
+                  /(filename|processname|file|name):?\s*['"]?([^'"]+\.(exe|dll|lnk|ps1|bat|sh|jar|vbs|doc|xls|pdf))['"]?/i
+                );
+                const descriptionFilenameMatch = ioc.description
+                  ? ioc.description
+                      .toLowerCase()
+                      .match(
+                        /'([^'"]+\.(exe|dll|lnk|ps1|bat|sh|jar|vbs|doc|xls|pdf))'/i
+                      )
+                  : null;
+
+                let matchedFilename = "";
+                if (filenameMatch && filenameMatch[2]) {
+                  matchedFilename = filenameMatch[2].toLowerCase();
+                } else if (
+                  descriptionFilenameMatch &&
+                  descriptionFilenameMatch[1]
+                ) {
+                  matchedFilename = descriptionFilenameMatch[1].toLowerCase();
+                }
+
+                if (matchedFilename) {
+                  if (
+                    procName.includes(matchedFilename) ||
+                    matchedFilename.includes(procName)
+                  ) {
+                    correlationResultsHtml += `<li><i class="fas fa-check-circle"></i> <b>Process Match:</b> Process '<code>${proc}</code>' from Sample3 matches JSON IOC filename/processname '<code>${matchedFilename}</code>'.</li>`;
+                    foundCorrelations = true;
+                  }
+                } else if (
+                  // Fallback for simple string match if no clear filename in pattern
+                  procName.includes(iocValueLower) ||
+                  iocValueLower.includes(procName)
+                ) {
+                  correlationResultsHtml += `<li><i class="fas fa-check-circle"></i> <b>Process Name Match:</b> Process '<code>${proc}</code>' from Sample3 matches JSON IOC value '<code>${ioc.value}</code>'.</li>`;
+                  foundCorrelations = true;
+                }
+              }
+            }
+          });
+        });
+
+        // 2. Correlate JSON IOCs (IPs, Domains, URLs) with potential network activity inferred from Sample3.
+        const commonNetworkProcesses = [
+          "svchost.exe",
+          "powershell.exe",
+          "cmd.exe",
+          "wscript.exe",
+          "cscript.exe",
+          "explorer.exe",
+          "curl.exe",
+          "wget.exe",
+          "nc.exe", // netcat
+          "python.exe", // often used for network
+          "java.exe", // often used for network
+        ];
+        const potentiallyNetworkActiveProcess = parsedSample3.processes.some(
+          (proc) =>
+            commonNetworkProcesses.some((cnp) =>
+              proc.toLowerCase().includes(cnp)
+            )
+        );
+
+        if (potentiallyNetworkActiveProcess) {
+          parsedJsonData.iocs.forEach((ioc) => {
+            if (ioc.type && ioc.value) {
+              const iocTypeLower = ioc.type.toLowerCase().trim();
+              const iocValue = ioc.value.trim();
+
+              if (
+                iocTypeLower.includes("ipv4-addr") ||
+                iocTypeLower.includes("domain") ||
+                iocTypeLower.includes("url")
+              ) {
+                correlationResultsHtml += `<li><i class="fas fa-info-circle"></i> <b>Potential Network Activity:</b> JSON IOC (Type: ${
+                  ioc.type
+                }, Value: <code>${
+                  ioc.value
+                }</code>) could be related to network connections from processes like ${commonNetworkProcesses.join(
+                  ", "
+                )} found in Sample3. (Further network analysis needed).</li>`;
+                foundCorrelations = true;
+              }
+            }
+          });
+        }
+
+        // 3. Correlate detected hashes (from JSON) with Sample3 (simple check if any hashes were found)
+        if (parsedJsonData.hashes.length > 0) {
+          correlationResultsHtml += `<li><i class="fas fa-fingerprint"></i> <b>Hash Presence:</b> ${parsedJsonData.hashes.length} unique file hashes detected in JSON. Utilize the VirusTotal section below for further threat intelligence on these hashes.</li>`;
+          foundCorrelations = true;
+        }
+
+        if (!foundCorrelations) {
+          correlationResultsHtml += `<li><p class="status-message">No direct correlations found based on available data and simple parsing logic. Further manual investigation is required using professional tools (e.g., Volatility, network traffic analysis tools) for deeper analysis.</p></li>`;
+        }
+        correlationResultsHtml += "</ul>";
+
+        // Add Mitigation Recommendations
+        let recommendationsHtml = `
+          <h4>Mitigation Recommendations (High-Level):</h4>
+          <ul>
+              <li><i class="fas fa-shield-alt"></i> <b>Immediate Isolation & Remediation:</b> Isolate the infected host(s) immediately. Perform a thorough forensic analysis and then remediate by restoring from known clean backups or rebuilding the system.</li>
+              <li><i class="fas fa-sync-alt"></i> <b>Patch Management:</b> Ensure all operating systems, applications (especially browsers, plugins), and security software are updated with the latest security patches to close known vulnerabilities.</li>
+              <li><i class="fas fa-user-shield"></i> <b>User Awareness Training:</b> Conduct regular training on phishing, social engineering, and safe Browse habits. Emphasize not clicking suspicious links or opening unsolicited attachments.</li>
+              <li><i class="fas fa-firewall"></i> <b>Network Segmentation & Filtering:</b> Implement network segmentation to limit lateral movement. Configure firewalls to restrict unnecessary outbound communication, especially to suspicious IPs/ports. Deploy IDS/IPS for C2 traffic detection.</li>
+              <li><i class="fas fa-fingerprint"></i> <b>Endpoint Security & Monitoring:</b> Deploy advanced EDR (Endpoint Detection and Response) solutions configured to detect and block malicious behaviors, including process injection, persistence mechanisms, and unusual file activity.</li>
+              <li><i class="fas fa-lock-open"></i> <b>Least Privilege Principle:</b> Enforce the principle of least privilege for all users and services. Restrict administrative rights and ensure users operate with minimum necessary permissions.</li>
+              <li><i class="fas fa-cloud-upload-alt"></i> <b>Regular Data Backups:</b> Implement a robust backup strategy with offsite, immutable backups. Regularly test backup and recovery procedures.</li>
+          </ul>
+        `;
+
+        updateCard(
+          "correlation-content",
+          "Correlation & Summary",
+          correlationResultsHtml + recommendationsHtml,
+          "fas fa-project-diagram"
+        );
+      }
+
+      // --- VirusTotal Integration Functions ---
+
+      function populateHashSelector(hashes) {
+        const selector = document.getElementById("hash-selector");
+        selector.innerHTML =
+          '<option value="">-- Select a Hash to Analyze --</option>'; // Reset
+        if (hashes && hashes.length > 0) {
+          hashes.forEach((hash) => {
+            const option = document.createElement("option");
+            option.value = hash.value;
+            option.textContent = `${hash.type}: ${hash.value}`;
+            selector.appendChild(option);
+          });
+          document
+            .getElementById("virustotal-analysis")
+            .querySelector(".status-message").textContent =
+            "Hashes loaded. Select one to analyze.";
+        } else {
+          document
+            .getElementById("virustotal-analysis")
+            .querySelector(".status-message").textContent =
+            "No hashes found in the uploaded JSON file.";
+        }
+        enableVtButton(); // Check button status
+      }
+
+      function enableVtButton() {
+        const selector = document.getElementById("hash-selector");
+        const analyzeBtn = document.getElementById("vt-analyze-btn");
+        analyzeBtn.disabled = selector.value === "";
+      }
+
+      async function analyzeHashWithVirusTotal() {
+        const selectedHash = document.getElementById("hash-selector").value;
+        const vtResultsDiv = document.getElementById("virustotal-results");
+        const analyzeBtn = document.getElementById("vt-analyze-btn");
+
+        if (!selectedHash) {
+          vtResultsDiv.innerHTML =
+            '<p class="status-message vt-result-undetected">Please select a hash to analyze.</p>';
+          return;
+        }
+
+        vtResultsDiv.innerHTML =
+          '<p class="status-message">Analyzing hash with VirusTotal... <i class="fas fa-spinner fa-spin"></i></p>';
+        analyzeBtn.disabled = true; // Disable button during analysis
+
+        try {
+          const response = await fetch(`${VIRUSTOTAL_API_URL}${selectedHash}`, {
+            method: "GET",
+            headers: {
+              "x-apikey": VIRUSTOTAL_API_KEY,
+              Accept: "application/json",
+            },
+          });
+
+          // Handle specific API errors
+          if (response.status === 401) {
+            throw new Error(
+              "Unauthorized: Invalid VirusTotal API Key or missing permissions."
+            );
+          } else if (response.status === 404) {
+            throw new Error("Hash not found on VirusTotal.");
+          } else if (response.status === 429) {
+            throw new Error(
+              "Rate limit exceeded. Please wait a moment before trying again."
+            );
+          } else if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(
+              `VirusTotal API error: ${response.status} - ${
+                errorData.error.message || response.statusText
+              }`
+            );
+          }
+
+          const data = await response.json();
+          displayVirusTotalResults(data);
+        } catch (error) {
+          console.error("Error analyzing with VirusTotal:", error);
+          vtResultsDiv.innerHTML = `<p class="status-message vt-result-malicious">Error: ${error.message}. Please check API key, network, or hash validity.</p>`;
+        } finally {
+          analyzeBtn.disabled = false; // Re-enable button
+        }
+      }
+
+      function displayVirusTotalResults(data) {
+        const vtResultsDiv = document.getElementById("virustotal-results");
+        let htmlContent = "";
+
+        if (data && data.data && data.data.attributes) {
+          const attrs = data.data.attributes;
+          const lastAnalysisStats = attrs.last_analysis_stats;
+          const totalVotes = attrs.total_votes;
+          const reputation = attrs.reputation;
+          const tags = attrs.tags;
+          const sha256 = attrs.sha256; // Use SHA256 for the link
+          const detectUrl = `https://www.virustotal.com/gui/file/${sha256}/detection`;
+
+          // Check if there are actual detection stats
+          const totalDetections = lastAnalysisStats?.malicious || 0;
+          const totalEngines = Object.keys(
+            attrs.last_analysis_results || {}
+          ).length;
+
+          htmlContent += `
+            <h4>Analysis Result for <code>${
+              attrs.md5 || attrs.sha1 || sha256
+            }</code>:</h4>
+            <p><b>Analysis Date:</b> ${new Date(
+              attrs.last_analysis_date * 1000
+            ).toLocaleString()}</p>
+            <p><b>File Name:</b> ${attrs.meaningful_name || "N/A"}</p>
+            <p><b>Size:</b> ${(attrs.size / (1024 * 1024)).toFixed(2)} MB</p>
+            <p><b>Type:</b> ${attrs.type_description || "N/A"}</p>
+            <p><b>Reputation:</b> <span class="${
+              reputation > 0
+                ? "vt-result-harmless"
+                : reputation < 0
+                ? "vt-result-malicious"
+                : "vt-result-undetected"
+            }">${reputation}</span></p>
+            <p><b>Community Votes:</b> Harmless <span class="vt-result-harmless">${
+              totalVotes?.harmless || 0
+            }</span>, Malicious <span class="vt-result-malicious">${
+            totalVotes?.malicious || 0
+          }</span></p>
+            <p><b>Antivirus Detections:</b> 
+                <span class="vt-result-malicious">${totalDetections}</span> malicious out of ${totalEngines} engines.
+            </p>
+            ${
+              attrs.popular_threat_classification?.popular_threat_name
+                ? `<p><b>Popular Threat Name:</b> ${attrs.popular_threat_classification.popular_threat_name.join(
+                    ", "
+                  )}</p>`
+                : ""
+            }
+            ${
+              attrs.threat_names && attrs.threat_names.length > 0
+                ? `<p><b>Threat Names:</b> ${attrs.threat_names.join(", ")}</p>`
+                : ""
+            }
+            ${
+              tags && tags.length > 0
+                ? `<p><b>Tags:</b> ${tags.join(", ")}</p>`
+                : ""
+            }
+            <p><a href="${detectUrl}" target="_blank" rel="noopener noreferrer">View Full Report on VirusTotal <i class="fas fa-external-link-alt"></i></a></p>
+          `;
+
+          if (totalDetections > 0) {
+            htmlContent += `<p class="vt-result-malicious"><b>WARNING: This file is detected as malicious by ${totalDetections} antivirus engines!</b></p>`;
+          } else {
+            htmlContent += `<p class="vt-result-harmless">This file appears to be harmless or undetected by most engines.</p>`;
+          }
+        } else if (data && data.error) {
+          htmlContent = `<p class="status-message vt-result-malicious">VirusTotal Error: ${data.error.message}</p>`;
+        } else {
+          htmlContent =
+            '<p class="status-message vt-result-undetected">No detailed analysis data available from VirusTotal for this hash. It might be a new file or an invalid hash.</p>';
+        }
+        vtResultsDiv.innerHTML = htmlContent;
+      }
+
+      // --- Main Analysis Flow ---
+
+      async function analyzeFiles() {
+        const jsonFile = document.getElementById("file-attack2-json").files[0];
+        const sample3File = document.getElementById("file-sample3").files[0];
+
+        if (!jsonFile && !sample3File) {
+          alert("Please upload at least one file to analyze.");
+          return;
+        }
+
+        // Reset global variables and UI
+        parsedJsonData = { malware: [], iocs: [], hashes: [] };
+        parsedSample3 = { processes: [], platform: "", rawContent: "" };
+        document.getElementById("virustotal-results").innerHTML = ""; // Clear previous VT results
+        document.getElementById("hash-selector").innerHTML =
+          '<option value="">-- Select a Hash to Analyze --</option>'; // Reset dropdown
+        document.getElementById("vt-analyze-btn").disabled = true; // Disable button
+        document
+          .getElementById("virustotal-analysis")
+          .querySelector(".status-message").textContent =
+          "Upload and analyze JSON file to enable VirusTotal lookup.";
+
+        // Set loading status for all cards
+        updateCard(
+          "json-content",
+          "Attack2 JSON Analysis",
+          "<p class='status-message'>Loading...</p>",
+          "fas fa-file-alt"
+        );
+        updateCard(
+          "sample3-content",
+          "Sample3 Host Analysis",
+          "<p class='status-message'>Loading...</p>",
+          "fas fa-laptop-code"
+        );
+        updateCard(
+          "correlation-content",
+          "Correlation & Summary",
+          "<p class='status-message'>Performing correlation...</p>",
+          "fas fa-project-diagram"
+        );
+
+        const parsingPromises = [];
+
+        if (jsonFile) parsingPromises.push(parseJsonFile(jsonFile));
+        else
+          updateCard(
+            "json-content",
+            "Attack2 JSON Analysis",
+            "<p class='status-message'>No file uploaded.</p>",
+            "fas fa-file-alt"
+          );
+
+        if (sample3File) parsingPromises.push(parseSample3File(sample3File));
+        else
+          updateCard(
+            "sample3-content",
+            "Sample3 Host Analysis",
+            "<p class='status-message'>No file uploaded.</p>",
+            "fas fa-laptop-code"
+          );
+
+        try {
+          await Promise.all(parsingPromises);
+          performCorrelation();
+        } catch (error) {
+          console.error("An error occurred during file processing:", error);
+          updateCard(
+            "correlation-content",
+            "Correlation & Summary",
+            `<p class="status-message">Error during analysis: ${error.message}</p>`,
+            "fas fa-exclamation-triangle"
+          );
+        }
+      }
+    </script>
+  </body>
+</html>
